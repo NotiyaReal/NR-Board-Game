@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101820">
+
+<title>දෙන්නාගේ රාත්‍රී සටන</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, #3b596d, #101820 70%);
+  color: #f5eedc;
+  padding: 15px;
+}
+
+.game {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.title h1 {
+  margin: 5px 0;
+  font-size: 30px;
+}
+
+.title p {
+  margin: 0;
+  color: #c6d0d2;
+}
+
+.panel {
+  background: rgba(20, 27, 31, 0.96);
+  border: 1px solid #59666b;
+  border-radius: 24px;
+  padding: 15px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.6);
+}
+
+.players {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.player {
+  padding: 10px 13px;
+  border-radius: 14px;
+  background: #252f34;
+  border: 1px solid #4d595e;
+}
+
+.active {
+  outline: 2px solid #e4ba6c;
+}
+
+.status {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  background: #0b1012;
+  padding: 7px;
+  border-radius: 17px;
+  aspect-ratio: 1;
+}
+
+.cell {
+  border: none;
+  border-radius: 8px;
+  background: #d8c89e;
+  position: relative;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+}
+
+.cell:nth-child(odd) {
+  background: #8d6e50;
+}
+
+.cell:active {
+  transform: scale(.94);
+}
+
+.piece {
+  position: absolute;
+  width: 58%;
+  height: 58%;
+  left: 21%;
+  top: 21%;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.5);
+  box-shadow:
+    inset 0 4px 5px rgba(255,255,255,.5),
+    0 5px 9px rgba(0,0,0,.7);
+}
+
+.red {
+  background: #d94f47;
+}
+
+.blue {
+  background: #4c8ed9;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+button.action {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 15px;
+  background: #e3b96e;
+  color: #172026;
+  cursor: pointer;
+}
+
+button.action:disabled {
+  opacity: .45;
+}
+
+.rules {
+  margin-top: 13px;
+  color: #c4ced0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media(max-width:430px) {
+
+  .title h1 {
+    font-size: 25px;
+  }
+
+  .player {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .status {
+    font-size: 12px;
+  }
+
+  .board {
+    gap: 4px;
+    padding: 5px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+  <div class="title">
+    <h1>🎲 දෙන්නාගේ රාත්‍රී සටන</h1>
+    <p>එකම phone එකෙන් දෙන්නාටම play කරන්න</p>
+  </div>
+
+  <div class="panel">
+
+    <div class="players">
+
+      <div id="player1" class="player active">
+        🔴 Player 1:
+        <b id="score1">0</b>
+      </div>
+
+      <div id="status" class="status">
+        🎲 Dice එක Roll කරන්න
+      </div>
+
+      <div id="player2" class="player">
+        🔵 Player 2:
+        <b id="score2">0</b>
+      </div>
+
+    </div>
+
+    <div id="board" class="board"></div>
+
+    <div class="controls">
+
+      <button id="rollButton" class="action">
+        🎲 Roll Dice
+      </button>
+
+      <button id="newGameButton" class="action">
+        ↻ New Game
+      </button>
+
+    </div>
+
+    <div class="rules">
+      <b>ක්‍රීඩා කරන විදිහ:</b><br>
+      1. 🎲 Roll Dice කරන්න.<br>
+      2. ලැබුණු ගණනට ඉදිරියෙන් ඇති cell එක tap කරන්න.<br>
+      3. එකම cell එකට ආවොත් අනිත් playerගේ piece එක Start එකට යනවා.<br>
+      4. ⭐ මුලින්ම ලකුණු 12ක් ගන්න කෙනා ජයග්‍රාහකයා!
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const board = document.getElementById("board");
+const statusText = document.getElementById("status");
+const rollButton = document.getElementById("rollButton");
+
+const score1Text = document.getElementById("score1");
+const score2Text = document.getElementById("score2");
+
+const player1Box = document.getElementById("player1");
+const player2Box = document.getElementById("player2");
+
+let position = [0, 0];
+
+let score = [0, 0];
+
+let turn = 0;
+
+let dice = 0;
+
+let waitingForMove = false;
+
+
+/* BOARD */
+
+function drawBoard() {
+
+  board.innerHTML = "";
+
+  for (let i = 0; i < 32; i++) {
+
+    const cell = document.createElement("button");
+
+    cell.className = "cell";
+
+    if (position[0] === i) {
+
+      const piece = document.createElement("div");
+
+      piece.className = "piece red";
+
+      cell.appendChild(piece);
+
+    }
+
+    if (position[1] === i) {
+
+      const piece = document.createElement("div");
+
+      piece.className = "piece blue";
+
+      cell.appendChild(piece);
+
+    }
+
+    cell.onclick = function() {
+
+      movePlayer(i);
+
+    };
+
+    board.appendChild(cell);
+
+  }
+
+  score1Text.textContent = score[0];
+
+  score2Text.textContent = score[1];
+
+  player1Box.classList.toggle("active", turn === 0);
+
+  player2Box.classList.toggle("active", turn === 1);
+
+}
+
+
+/* ROLL DICE */
+
+rollButton.onclick = function() {
+
+  if (waitingForMove) return;
+
+  dice = Math.floor(Math.random() * 6) + 1;
+
+  const target = position[turn] + dice;
+
+  if (target > 31) {
+
+    statusText.textContent =
+      "🎲 " + dice +
+      "යි — ඉඩ මදි! නැවත Roll කරන්න.";
+
+    return;
+
+  }
+
+  waitingForMove = true;
+
+  statusText.textContent =
+    "🎲 " + dice +
+    "යි — cell " + target +
+    " tap කරන්න!";
+
+};
+
+
+/* MOVE */
+
+function movePlayer(cellNumber) {
+
+  if (!waitingForMove) return;
+
+  const target = position[turn] + dice;
+
+  if (target > 31) return;
+
+  if (cellNumber !== target) return;
+
+  position[turn] = target;
+
+  score[turn] += dice;
+
+  waitingForMove = false;
+
+
+  /* COLLISION */
+
+  if (
+    position[0] === position[1] &&
+    position[0] !== 0
+  ) {
+
+    position[1 - turn] = 0;
+
+    statusText.textContent =
+      "💥 Player " +
+      (turn + 1) +
+      " අනිත් playerව Start එකට යැව්වා!";
+
+  }
+
+
+  /* WIN */
+
+  if (score[turn] >= 12) {
+
+    statusText.textContent =
+      "🏆 Player " +
+      (turn + 1) +
+      " ජයග්‍රහණය කළා!";
+
+    rollButton.disabled = true;
+
+    drawBoard();
+
+    return;
+
+  }
+
+
+  turn = 1 - turn;
+
+  statusText.textContent =
+    "Player " +
+    (turn + 1) +
+    "ගේ turn එක 🎲";
+
+  drawBoard();
+
+}
+
+
+/* NEW GAME */
+
+document.getElementById("newGameButton").onclick =
+function() {
+
+  position = [0, 0];
+
+  score = [0, 0];
+
+  turn = 0;
+
+  dice = 0;
+
+  waitingForMove = false;
+
+  rollButton.disabled = false;
+
+  statusText.textContent =
+    "🎲 Dice එක Roll කරන්න";
+
+  drawBoard();
+
+};
+
+
+/* START */
+
+drawBoard();
+
+</script>
+
+</body>
+  </html>
