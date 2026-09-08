@@ -246,187 +246,267 @@ const player1Box = document.getElementById("player1");
 const player2Box = document.getElementById("player2");
 
 let position = [0, 0];
-
 let score = [0, 0];
 
 let turn = 0;
-
 let dice = 0;
-
 let waitingForMove = false;
+let computerThinking = false;
 
 
-/* BOARD */
+/* DRAW BOARD */
 
 function drawBoard() {
 
-  board.innerHTML = "";
+    board.innerHTML = "";
 
-  for (let i = 0; i < 32; i++) {
+    for (let i = 0; i < 32; i++) {
 
-    const cell = document.createElement("button");
+        const cell = document.createElement("button");
+        cell.className = "cell";
 
-    cell.className = "cell";
+        if (position[0] === i) {
 
-    if (position[0] === i) {
+            const piece = document.createElement("div");
+            piece.className = "piece red";
 
-      const piece = document.createElement("div");
+            cell.appendChild(piece);
+        }
 
-      piece.className = "piece red";
+        if (position[1] === i) {
 
-      cell.appendChild(piece);
+            const piece = document.createElement("div");
+            piece.className = "piece blue";
 
+            cell.appendChild(piece);
+        }
+
+        cell.onclick = function () {
+
+            if (turn === 0) {
+                movePlayer(i);
+            }
+
+        };
+
+        board.appendChild(cell);
     }
 
-    if (position[1] === i) {
+    score1Text.textContent = score[0];
+    score2Text.textContent = score[1];
 
-      const piece = document.createElement("div");
-
-      piece.className = "piece blue";
-
-      cell.appendChild(piece);
-
-    }
-
-    cell.onclick = function() {
-
-      movePlayer(i);
-
-    };
-
-    board.appendChild(cell);
-
-  }
-
-  score1Text.textContent = score[0];
-
-  score2Text.textContent = score[1];
-
-  player1Box.classList.toggle("active", turn === 0);
-
-  player2Box.classList.toggle("active", turn === 1);
-
+    player1Box.classList.toggle("active", turn === 0);
+    player2Box.classList.toggle("active", turn === 1);
 }
 
 
-/* ROLL DICE */
+/* HUMAN PLAYER */
 
-rollButton.onclick = function() {
+rollButton.onclick = function () {
 
-  if (waitingForMove) return;
+    if (turn !== 0) return;
+    if (waitingForMove) return;
+    if (computerThinking) return;
 
-  dice = Math.floor(Math.random() * 6) + 1;
+    dice = Math.floor(Math.random() * 6) + 1;
 
-  const target = position[turn] + dice;
+    const target = position[0] + dice;
 
-  if (target > 31) {
+    if (target > 31) {
+
+        statusText.textContent =
+            "🎲 " + dice +
+            "යි — ඉඩ මදි! නැවත Roll කරන්න.";
+
+        return;
+    }
+
+    waitingForMove = true;
 
     statusText.textContent =
-      "🎲 " + dice +
-      "යි — ඉඩ මදි! නැවත Roll කරන්න.";
-
-    return;
-
-  }
-
-  waitingForMove = true;
-
-  statusText.textContent =
-    "🎲 " + dice +
-    "යි — cell " + target +
-    " tap කරන්න!";
+        "🎲 " + dice +
+        "යි — cell " + target +
+        " tap කරන්න!";
 
 };
 
 
-/* MOVE */
+/* HUMAN MOVE */
 
 function movePlayer(cellNumber) {
 
-  if (!waitingForMove) return;
+    if (turn !== 0) return;
+    if (!waitingForMove) return;
 
-  const target = position[turn] + dice;
+    const target = position[0] + dice;
 
-  if (target > 31) return;
+    if (target > 31) return;
 
-  if (cellNumber !== target) return;
+    if (cellNumber !== target) return;
 
-  position[turn] = target;
+    position[0] = target;
 
-  score[turn] += dice;
+    score[0] += dice;
 
-  waitingForMove = false;
-
-
-  /* COLLISION */
-
-  if (
-    position[0] === position[1] &&
-    position[0] !== 0
-  ) {
-
-    position[1 - turn] = 0;
-
-    statusText.textContent =
-      "💥 Player " +
-      (turn + 1) +
-      " අනිත් playerව Start එකට යැව්වා!";
-
-  }
+    waitingForMove = false;
 
 
-  /* WIN */
+    /* HIT COMPUTER */
 
-  if (score[turn] >= 12) {
+    if (
+        position[0] === position[1] &&
+        position[0] !== 0
+    ) {
 
-    statusText.textContent =
-      "🏆 Player " +
-      (turn + 1) +
-      " ජයග්‍රහණය කළා!";
+        position[1] = 0;
 
-    rollButton.disabled = true;
+        statusText.textContent =
+            "💥 ඔයා Computer එකේ piece එක Start එකට යැව්වා!";
+    }
+
+
+    /* HUMAN WIN */
+
+    if (score[0] >= 12) {
+
+        statusText.textContent =
+            "🏆 ඔයා දිනුම්! 🎉";
+
+        rollButton.disabled = true;
+
+        drawBoard();
+
+        return;
+    }
+
 
     drawBoard();
 
-    return;
+    /* COMPUTER TURN */
 
-  }
+    turn = 1;
+
+    drawBoard();
+
+    statusText.textContent =
+        "🤖 Computer හිතනවා...";
+
+    computerThinking = true;
+
+    setTimeout(computerMove, 1200);
+}
 
 
-  turn = 1 - turn;
+/* COMPUTER */
 
-  statusText.textContent =
-    "Player " +
-    (turn + 1) +
-    "ගේ turn එක 🎲";
+function computerMove() {
 
-  drawBoard();
+    dice = Math.floor(Math.random() * 6) + 1;
 
+    const target = position[1] + dice;
+
+    if (target > 31) {
+
+        statusText.textContent =
+            "🤖 Computerට move කරන්න බැහැ...";
+
+        setTimeout(() => {
+
+            turn = 0;
+            computerThinking = false;
+
+            statusText.textContent =
+                "🎲 ඔයාගේ turn එක!";
+
+            drawBoard();
+
+        }, 900);
+
+        return;
+    }
+
+
+    statusText.textContent =
+        "🤖 Computer 🎲 " + dice +
+        " roll කළා...";
+
+
+    setTimeout(() => {
+
+        position[1] = target;
+
+        score[1] += dice;
+
+
+        /* HIT PLAYER */
+
+        if (
+            position[0] === position[1] &&
+            position[1] !== 0
+        ) {
+
+            position[0] = 0;
+
+            statusText.textContent =
+                "💥 Computer ඔයාගේ piece එක Start එකට යැව්වා!";
+        }
+
+
+        /* COMPUTER WIN */
+
+        if (score[1] >= 12) {
+
+            statusText.textContent =
+                "🤖🏆 Computer දිනුම්!";
+
+            rollButton.disabled = true;
+
+            computerThinking = false;
+
+            drawBoard();
+
+            return;
+        }
+
+
+        /* BACK TO PLAYER */
+
+        turn = 0;
+
+        computerThinking = false;
+
+        statusText.textContent =
+            "🎮 ඔයාගේ turn එක — Dice Roll කරන්න!";
+
+        drawBoard();
+
+    }, 900);
 }
 
 
 /* NEW GAME */
 
 document.getElementById("newGameButton").onclick =
-function() {
+function () {
 
-  position = [0, 0];
+    position = [0, 0];
 
-  score = [0, 0];
+    score = [0, 0];
 
-  turn = 0;
+    turn = 0;
 
-  dice = 0;
+    dice = 0;
 
-  waitingForMove = false;
+    waitingForMove = false;
 
-  rollButton.disabled = false;
+    computerThinking = false;
 
-  statusText.textContent =
-    "🎲 Dice එක Roll කරන්න";
+    rollButton.disabled = false;
 
-  drawBoard();
+    statusText.textContent =
+        "🎲 Dice එක Roll කරන්න";
 
+    drawBoard();
 };
 
 
