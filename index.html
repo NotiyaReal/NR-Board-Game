@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#101820">
 
-<title>දෙන්නාගේ රාත්‍රී සටන</title>
+<title>NR Gaming</title>
 
 <style>
 * {
@@ -183,8 +183,8 @@ button.action:disabled {
 <div class="game">
 
   <div class="title">
-    <h1>🎲 දෙන්නාගේ රාත්‍රී සටන</h1>
-    <p>එකම phone එකෙන් දෙන්නාටම play කරන්න</p>
+    <h1>🎲 NR GAMING</h1>
+    <p>මේක වෙනස්ම එකක්</p>
   </div>
 
   <div class="panel">
@@ -316,7 +316,7 @@ rollButton.onclick = function () {
 
         statusText.textContent =
             "🎲 " + dice +
-            "යි — ඉඩ මදි! නැවත Roll කරන්න.";
+            "හී — ඉඩ මදි! නැවත Roll කරන්න.";
 
         return;
     }
@@ -361,7 +361,7 @@ function movePlayer(cellNumber) {
         position[1] = 0;
 
         statusText.textContent =
-            "💥 ඔයා Computer එකේ piece එක Start එකට යැව්වා!";
+            "💥 ඔයා Notiyaගෙ piece එක Start එකට යැව්වා!";
     }
 
 
@@ -389,7 +389,7 @@ function movePlayer(cellNumber) {
     drawBoard();
 
     statusText.textContent =
-        "🤖 Computer හිතනවා...";
+        "🤖 Notiya හිතනවා...";
 
     computerThinking = true;
 
@@ -408,7 +408,7 @@ function computerMove() {
     if (target > 31) {
 
         statusText.textContent =
-            "🤖 Computerට move කරන්න බැහැ...";
+            "🤖 Notiyaට move කරන්න බැහැ...";
 
         setTimeout(() => {
 
@@ -427,7 +427,7 @@ function computerMove() {
 
 
     statusText.textContent =
-        "🤖 Computer 🎲 " + dice +
+        "🤖 Notiya 🎲 " + dice +
         " roll කළා...";
 
 
@@ -448,7 +448,7 @@ function computerMove() {
             position[0] = 0;
 
             statusText.textContent =
-                "💥 Computer ඔයාගේ piece එක Start එකට යැව්වා!";
+                "💥 Notiya ඔයාගේ piece එක Start එකට යැව්වා!";
         }
 
 
@@ -457,7 +457,7 @@ function computerMove() {
         if (score[1] >= 12) {
 
             statusText.textContent =
-                "🤖🏆 Computer දිනුම්!";
+                "🤖🏆 Notiya දිනුම්!";
 
             rollButton.disabled = true;
 
